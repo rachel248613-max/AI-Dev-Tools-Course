@@ -1,0 +1,140 @@
+{% extends 'todos/base.html' %}
+
+{% block content %}
+<style>
+    .todo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .todo-list {
+        list-style: none;
+    }
+    .todo-item {
+        background-color: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+    }
+    .todo-item.resolved {
+        opacity: 0.6;
+        border-left-color: #28a745;
+    }
+    .todo-item.overdue {
+        border-left-color: #dc3545;
+    }
+    .todo-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .todo-title.resolved {
+        text-decoration: line-through;
+    }
+    .todo-description {
+        color: #666;
+        margin-bottom: 10px;
+    }
+    .todo-meta {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 10px;
+    }
+    .todo-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    .status-badge.resolved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-badge.overdue {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+
+<div class="todo-header">
+    <h2>My Todos</h2>
+    <a href="{% url 'todo_create' %}" class="btn btn-primary">Create New Todo</a>
+</div>
+
+{% if todos %}
+<ul class="todo-list">
+    {% for todo in todos %}
+    <li class="todo-item {% if todo.resolved %}resolved{% elif todo.is_overdue %}overdue{% endif %}">
+        <div class="todo-title {% if todo.resolved %}resolved{% endif %}">
+            {{ todo.title }}
+            {% if todo.resolved %}
+            <span class="status-badge resolved">Resolved</span>
+            {% elif todo.is_overdue %}
+            <span class="status-badge overdue">Overdue</span>
+            {% endif %}
+        </div>
+        {% if todo.description %}
+        <div class="todo-description">{{ todo.description }}</div>
+        {% endif %}
+        <div class="todo-meta">
+            {% if todo.due_date %}
+            Due: <span class="local-time" data-utc="{{ todo.due_date|date:'c' }}">{{ todo.due_date|date:"Y-m-d H:i" }}</span> |
+            {% endif %}
+            Created: <span class="local-time" data-utc="{{ todo.created_at|date:'c' }}">{{ todo.created_at|date:"Y-m-d H:i" }}</span>
+        </div>
+        <div class="todo-actions">
+            <form method="post" action="{% url 'todo_toggle_resolved' todo.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if todo.resolved %}btn-secondary{% else %}btn-success{% endif %}">
+                    {% if todo.resolved %}Mark Unresolved{% else %}Mark Resolved{% endif %}
+                </button>
+            </form>
+            <a href="{% url 'todo_edit' todo.pk %}" class="btn btn-sm btn-primary">Edit</a>
+            <a href="{% url 'todo_delete' todo.pk %}" class="btn btn-sm btn-danger">Delete</a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">
+    <p>No todos yet. Create your first todo to get started!</p>
+</div>
+{% endif %}
+
+<script>
+    // Convert all UTC times to user's local timezone
+    document.addEventListener('DOMContentLoaded', function() {
+        const timeElements = document.querySelectorAll('.local-time');
+
+        timeElements.forEach(function(element) {
+            const utcTime = element.getAttribute('data-utc');
+            if (utcTime) {
+                const date = new Date(utcTime);
+
+                // Format: YYYY-MM-DD HH:MM
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+
+                element.textContent = `${year}-${month}-${day} ${hours}:${minutes}`;
+            }
+        });
+    });
+</script>
+
+{% endblock %}
