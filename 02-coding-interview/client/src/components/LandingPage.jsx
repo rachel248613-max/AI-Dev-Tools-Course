@@ -120,7 +120,7 @@ const LandingPage = () => {
             </div>
 
             <footer className="absolute bottom-4 text-gray-600 text-sm">
-                Built with React, Socket.io, and WebRTC
+                Built with React and Socket.io
             </footer>
         </div>
     );
