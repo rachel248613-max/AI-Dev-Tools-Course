@@ -17,7 +17,7 @@ describe('Backend Integration Tests', () => {
 
         // Re-implement basic routes for testing to avoid importing entire index.js which listens on port
         app.get('/', (req, res) => {
-            res.send('Server is running');
+            res.send('<html>Mock Index</html>');
         });
 
         httpServer = http.createServer(app);
@@ -56,11 +56,11 @@ describe('Backend Integration Tests', () => {
         httpServer.close();
     });
 
-    // Test: GET / (Health Check)
-    test('GET / should return 200', async () => {
+    // Test: GET / (Health Check / Static File)
+    test('GET / should return index.html', async () => {
         const response = await request(app).get('/');
         expect(response.status).toBe(200);
-        expect(response.text).toBe('Server is running');
+        expect(response.text).toBe('<html>Mock Index</html>');
     });
 
     // Code execution test removed (handled client-side now)
